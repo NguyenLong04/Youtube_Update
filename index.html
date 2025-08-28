@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang Quản Lý Cập Nhật Phần Mềm</title>
+    <link rel="stylesheet" href="./assets/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+
+    <!-- Main container for the application -->
+    <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-4xl border-t-4 border-indigo-500">
+        <h1 class="text-4xl font-extrabold text-center text-gray-900 mb-8">
+            Trang Quản Lý Cập Nhật
+        </h1>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Left Column: Current Info & Logs -->
+            <div class="md:col-span-1 space-y-8">
+                <!-- Current Version Info -->
+                <div class="bg-gray-50 p-6 rounded-lg shadow-sm border border-gray-200">
+                    <h2 class="text-xl font-bold text-gray-800 mb-2">Thông tin Phiên bản</h2>
+                    <p class="text-sm text-gray-600 mb-4">
+                        <span class="font-semibold">Phiên bản hiện tại:</span> <span id="current-version" class="font-mono text-indigo-600">v1.0.2</span>
+                    </p>
+                    <button id="check-update-btn" class="w-full py-2 px-4 rounded-md text-sm font-medium text-white bg-green-500 hover:bg-green-600 transition-colors">
+                        Kiểm tra cập nhật
+                    </button>
+                </div>
+
+                <!-- Activity Log -->
+                <div class="bg-gray-50 p-6 rounded-lg shadow-sm border border-gray-200">
+                    <h2 class="text-xl font-bold text-gray-800 mb-2">Nhật ký hoạt động</h2>
+                    <div id="activity-log" class="text-sm text-gray-600 space-y-1 h-48 overflow-y-auto bg-white p-2 rounded-md border border-gray-300">
+                        <!-- Log messages will be dynamically added here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Version History & Upload -->
+            <div class="md:col-span-2 space-y-8">
+                <!-- Version History Section -->
+                <div class="bg-gray-50 p-6 rounded-lg shadow-sm border border-gray-200">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Lịch sử Cập nhật</h2>
+                    <div id="loading-spinner" class="text-center text-gray-500 py-8 animate-pulse hidden">
+                        Đang tải danh sách phiên bản...
+                    </div>
+                    <ul id="version-list" class="space-y-4">
+                        <!-- Version items will be populated by JavaScript -->
+                    </ul>
+                </div>
+
+                <!-- File Upload Section -->
+                <div class="bg-gray-50 p-6 rounded-lg shadow-sm border border-gray-200">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Tải lên Phiên bản Mới</h2>
+                    <form id="upload-form" class="space-y-4">
+                        <label for="fileInput" class="block text-sm font-medium text-gray-700">Chọn file .zip để tải lên GitHub:</label>
+                        <input
+                            id="fileInput"
+                            name="fileInput"
+                            type="file"
+                            accept=".zip"
+                            class="block w-full text-sm text-gray-500
+                                file:mr-4 file:py-2 file:px-4
+                                file:rounded-full file:border-0
+                                file:text-sm file:font-semibold
+                                file:bg-indigo-50 file:text-indigo-700
+                                hover:file:bg-indigo-100 transition-colors duration-200"
+                        />
+                        <button
+                            type="submit"
+                            class="w-full flex justify-center py-3 px-6 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
+                        >
+                            Tải lên
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Modal for Instructions -->
+        <div id="instruction-modal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center p-4 z-50 transition-opacity duration-300 hidden">
+            <div class="bg-white p-8 rounded-xl shadow-2xl max-w-lg w-full transform transition-transform duration-300 scale-100">
+                <h3 class="text-2xl font-bold text-gray-900 mb-4 border-b pb-2">Hoàn tất Tải lên</h3>
+                <div id="modal-content" class="space-y-4 text-gray-700">
+                    <!-- Modal content will be dynamically generated here -->
+                </div>
+                <div class="mt-6 text-right">
+                    <button
+                        id="close-modal-btn"
+                        class="py-2 px-6 rounded-md border border-transparent text-sm font-medium text-white bg-gray-500 hover:bg-gray-600 focus:outline-none"
+                    >
+                        Đóng
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="./assets/script.js"></script>
+</body>
+</html>
