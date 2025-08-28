@@ -1,9 +1,6 @@
 // Data versions as a JavaScript object (simulating a database)
-// We will store new versions here to simulate persistence
-let versions = [
-    { version: 'v1.0.0', date: '2023-10-26', download_url: '#' },
-    { version: 'v0.0.1', date: '2023-09-15', download_url: '#' }
-];
+// We will store new versions here and persist them to Local Storage
+let versions = [];
 
 // Global state and DOM elements
 const DOMElements = {
@@ -36,12 +33,12 @@ function renderVersions() {
         return;
     }
 
-    sortedVersions.forEach(version => {
+    sortedVersions.forEach((version, index) => {
         const li = document.createElement('li');
-        li.className = `flex items-center justify-between p-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 bg-gray-700 border border-gray-600`;
+        li.className = `flex flex-col md:flex-row items-center justify-between p-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 bg-gray-700 border border-gray-600`;
 
         li.innerHTML = `
-            <div class="flex-1 min-w-0">
+            <div class="flex-1 min-w-0 mb-4 md:mb-0">
                 <div class="font-bold text-xl text-white">
                     Phiên bản ${version.version}
                 </div>
@@ -49,13 +46,136 @@ function renderVersions() {
                     Ngày phát hành: ${version.date}
                 </div>
             </div>
-            <a href="${version.download_url}" class="ml-4 py-2 px-6 rounded-full text-white bg-green-500 hover:bg-green-600 transition-colors duration-200 shadow-md flex items-center">
-                <i class="fas fa-download mr-2"></i> Tải xuống
-            </a>
+            <div class="flex space-x-2">
+                <button class="edit-btn py-2 px-4 rounded-full text-white bg-blue-500 hover:bg-blue-600 transition-colors duration-200 shadow-md flex items-center" data-index="${index}">
+                    <i class="fas fa-edit mr-2"></i> Sửa
+                </button>
+                <button class="delete-btn py-2 px-4 rounded-full text-white bg-red-500 hover:bg-red-600 transition-colors duration-200 shadow-md flex items-center" data-index="${index}">
+                    <i class="fas fa-trash-alt mr-2"></i> Xóa
+                </button>
+                <a href="${version.download_url}" class="py-2 px-4 rounded-full text-white bg-green-500 hover:bg-green-600 transition-colors duration-200 shadow-md flex items-center">
+                    <i class="fas fa-download mr-2"></i> Tải xuống
+                </a>
+            </div>
         `;
         DOMElements.versionList.appendChild(li);
     });
+
+    // Add event listeners for new buttons
+    document.querySelectorAll('.edit-btn').forEach(button => {
+        button.addEventListener('click', (event) => {
+            const index = event.currentTarget.getAttribute('data-index');
+            editVersion(index);
+        });
+    });
+
+    document.querySelectorAll('.delete-btn').forEach(button => {
+        button.addEventListener('click', (event) => {
+            const index = event.currentTarget.getAttribute('data-index');
+            deleteVersion(index);
+        });
+    });
 }
+
+/**
+ * Saves the versions array to Local Storage.
+ */
+function saveVersions() {
+    try {
+        localStorage.setItem('youtube_versions', JSON.stringify(versions));
+        addLogMessage('Đã lưu dữ liệu vào bộ nhớ cục bộ.');
+    } catch (e) {
+        addLogMessage('Lỗi khi lưu dữ liệu vào bộ nhớ cục bộ.', 'error');
+    }
+}
+
+/**
+ * Loads the versions array from Local Storage.
+ */
+function loadVersions() {
+    try {
+        const storedVersions = localStorage.getItem('youtube_versions');
+        if (storedVersions) {
+            versions = JSON.parse(storedVersions);
+            addLogMessage('Đã tải dữ liệu từ bộ nhớ cục bộ.');
+        } else {
+            // Initialize with default data if no data is found
+            versions = [
+                { version: 'v1.0.0', date: '2023-10-26', download_url: '#' },
+                { version: 'v0.0.1', date: '2023-09-15', download_url: '#' }
+            ];
+            saveVersions();
+            addLogMessage('Khởi tạo dữ liệu mặc định.');
+        }
+    } catch (e) {
+        addLogMessage('Lỗi khi tải dữ liệu từ bộ nhớ cục bộ, sử dụng dữ liệu mặc định.', 'error');
+        versions = [
+            { version: 'v1.0.0', date: '2023-10-26', download_url: '#' },
+            { version: 'v0.0.1', date: '2023-09-15', download_url: '#' }
+        ];
+    }
+}
+
+/**
+ * Edits a version by its index.
+ * @param {number} index - The index of the version to edit.
+ */
+function editVersion(index) {
+    const oldVersion = versions[index];
+    showModal('Chỉnh sửa Phiên bản', `
+        <p>Phiên bản cũ: <strong>${oldVersion.version}</strong></p>
+        <div class="mt-4">
+            <label for="editVersionInput" class="block text-sm font-medium text-gray-300 mb-1">Phiên bản mới:</label>
+            <input type="text" id="editVersionInput" value="${oldVersion.version}" class="w-full p-2 rounded-lg bg-gray-600 border border-gray-500 text-white">
+        </div>
+        <div class="mt-4 flex space-x-2">
+            <button id="saveEditBtn" class="py-2 px-4 rounded-xl text-white bg-green-500 hover:bg-green-600 transition-colors duration-200">Lưu</button>
+            <button id="cancelEditBtn" class="py-2 px-4 rounded-xl text-white bg-gray-600 hover:bg-gray-700 transition-colors duration-200">Hủy</button>
+        </div>
+    `);
+
+    document.getElementById('saveEditBtn').addEventListener('click', () => {
+        const newVersionInput = document.getElementById('editVersionInput').value.trim();
+        if (newVersionInput) {
+            versions[index].version = newVersionInput;
+            addLogMessage(`Đã cập nhật phiên bản từ "${oldVersion.version}" thành "${newVersionInput}".`);
+            renderVersions();
+            saveVersions();
+            hideModal();
+        } else {
+            addLogMessage('Lỗi: Phiên bản không được để trống.', 'error');
+            alert('Phiên bản không được để trống.'); // Use a simple alert for quick feedback in this mock
+        }
+    });
+
+    document.getElementById('cancelEditBtn').addEventListener('click', hideModal);
+}
+
+/**
+ * Deletes a version by its index.
+ * @param {number} index - The index of the version to delete.
+ */
+function deleteVersion(index) {
+    const versionToDelete = versions[index];
+    showModal('Xác nhận Xóa', `
+        <p>Bạn có chắc chắn muốn xóa phiên bản **${versionToDelete.version}** không? Hành động này không thể hoàn tác.</p>
+        <div class="mt-6 flex justify-end space-x-2">
+            <button id="confirmDeleteBtn" class="py-2 px-4 rounded-xl text-white bg-red-500 hover:bg-red-600 transition-colors duration-200">Xác nhận</button>
+            <button id="cancelDeleteBtn" class="py-2 px-4 rounded-xl text-white bg-gray-600 hover:bg-gray-700 transition-colors duration-200">Hủy</button>
+        </div>
+    `);
+
+    document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
+        versions.splice(index, 1);
+        addLogMessage(`Đã xóa phiên bản "${versionToDelete.version}".`);
+        renderVersions();
+        saveVersions();
+        hideModal();
+    });
+
+    document.getElementById('cancelDeleteBtn').addEventListener('click', hideModal);
+}
+
 
 /**
  * Adds a new message to the activity log.
@@ -132,12 +252,13 @@ DOMElements.uploadForm.addEventListener('submit', function(event) {
     const newVersion = {
         version: version,
         date: new Date().toISOString().split('T')[0],
-        download_url: '#' // Placeholder, as we can't save the file
+        download_url: `download/${version}/${file.name}`
     };
 
     versions.push(newVersion);
-    addLogMessage(`Đã thêm phiên bản mới "${version}" vào danh sách.`);
+    addLogMessage(`Đã thêm phiên bản mới "${version}" với đường dẫn ${newVersion.download_url}.`);
     renderVersions();
+    saveVersions(); // Save the updated array to Local Storage
 
     // Clear the form for the next upload
     DOMElements.versionInput.value = '';
@@ -150,6 +271,7 @@ DOMElements.fileInput.addEventListener('change', displayFileInfo);
 
 // Initial render on page load
 document.addEventListener('DOMContentLoaded', () => {
+    loadVersions(); // Load data from Local Storage first
     renderVersions();
     displayFileInfo(); // Initialize upload button state
     addLogMessage('Trang web đã tải xong.');
