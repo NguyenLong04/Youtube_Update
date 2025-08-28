@@ -1,106 +1,92 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cập Nhật Phần Mềm YouTube</title>
+    <title>Quản Lý Phiên Bản Ứng Dụng</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome CDN for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
     <link rel="stylesheet" href="./assets/style.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .modal {
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+    </style>
 </head>
-<body class="bg-gray-900 text-gray-100 flex items-center justify-center min-h-screen p-4">
-    <div class="bg-gray-800 p-10 rounded-3xl shadow-2xl w-full max-w-5xl border-t-8 border-indigo-600">
-        <header class="text-center mb-10">
-            <h1 class="text-5xl font-extrabold text-white leading-tight mb-2">
-                YouTube Downloader
-            </h1>
-            <p class="text-gray-400 text-lg">
-                Trang quản lý và cập nhật phiên bản (Mô phỏng)
-            </p>
+<body class="bg-gray-900 text-gray-200 p-4 sm:p-8">
+    <div class="container mx-auto max-w-6xl">
+        <!-- Header -->
+        <header class="text-center mb-8">
+            <h1 class="text-4xl sm:text-5xl font-extrabold text-white mb-2">Quản Lý Cập Nhật Ứng Dụng</h1>
+            <p class="text-lg text-gray-400">Tải lên các phiên bản mới và theo dõi lịch sử cập nhật.</p>
+            <div class="mt-4 text-center">
+                <span class="text-sm sm:text-base font-semibold text-gray-400">Phiên bản hiện tại: </span>
+                <span id="current-version" class="text-lg sm:text-xl font-bold text-green-400">v0.0.0</span>
+            </div>
         </header>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
-            <aside class="md:col-span-1 space-y-8">
-                <div class="bg-gray-700 p-6 rounded-2xl shadow-lg border border-gray-600">
-                    <h2 class="text-2xl font-bold text-white mb-4">Thông tin Phiên bản</h2>
-                    <div class="flex items-center justify-between mb-4">
-                        <span class="text-gray-300">Phiên bản hiện tại:</span>
-                        <span id="current-version" class="font-mono text-indigo-400 text-xl">v1.0.0</span>
-                    </div>
-                </div>
-
-                <div class="bg-gray-700 p-6 rounded-2xl shadow-lg border border-gray-600">
-                    <h2 class="text-2xl font-bold text-white mb-4">Nhật ký hoạt động</h2>
-                    <div id="activity-log" class="text-sm text-gray-400 space-y-2 h-48 overflow-y-auto bg-gray-800 p-4 rounded-xl border border-gray-600">
-                    </div>
-                </div>
-            </aside>
-
-            <main class="md:col-span-2 space-y-8">
-                <section class="bg-gray-700 p-6 rounded-2xl shadow-lg border border-gray-600">
-                    <h2 class="text-2xl font-bold text-white mb-6 border-b border-gray-600 pb-4">Tải lên Phiên bản Mới</h2>
-                    <form id="upload-form" class="space-y-6">
-                        <div>
-                            <label for="versionInput" class="block text-lg font-medium text-gray-300">Nhập số phiên bản:</label>
-                            <input
-                                id="versionInput"
-                                type="text"
-                                placeholder="Ví dụ: v1.0.1"
-                                class="w-full mt-2 p-3 rounded-lg bg-gray-600 border border-gray-500 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            />
+        <main class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Upload Panel -->
+            <section class="lg:col-span-1 p-6 bg-gray-800 rounded-3xl shadow-2xl border border-gray-700 h-fit sticky top-8">
+                <h2 class="text-2xl font-bold text-white mb-6">Tải Phiên Bản Mới</h2>
+                <form id="upload-form" class="space-y-4">
+                    <div>
+                        <label for="fileInput" class="block text-sm font-medium text-gray-300 mb-2">Chọn file .zip:</label>
+                        <div class="flex items-center justify-center w-full">
+                            <label for="fileInput" class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-xl cursor-pointer bg-gray-700 hover:bg-gray-600 transition-colors duration-200 border-gray-500">
+                                <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                    <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-2"></i>
+                                    <p class="mb-2 text-sm text-gray-400 font-semibold"><span class="font-bold text-green-400">Nhấp để tải lên</span> hoặc kéo và thả</p>
+                                    <p class="text-xs text-gray-500">Chỉ hỗ trợ file .zip</p>
+                                </div>
+                                <input id="fileInput" type="file" class="hidden" accept=".zip" />
+                            </label>
                         </div>
-                        <div>
-                            <label for="fileInput" class="block text-lg font-medium text-gray-300">Chọn file .zip để tải lên:</label>
-                            <div class="flex items-center space-x-4 mt-2">
-                                <input
-                                    id="fileInput"
-                                    name="fileInput"
-                                    type="file"
-                                    accept=".zip"
-                                    class="hidden"
-                                />
-                                <label for="fileInput" class="cursor-pointer py-3 px-6 rounded-xl text-lg font-bold text-indigo-700 bg-indigo-200 hover:bg-indigo-300 transition-colors duration-200 shadow-md">
-                                    <i class="fas fa-cloud-upload-alt mr-2"></i> Chọn File
-                                </label>
-                                <span id="file-info" class="text-gray-400 text-sm italic">Chưa có file nào được chọn.</span>
-                            </div>
-                        </div>
-                        <button
-                            type="submit"
-                            id="upload-btn"
-                            class="w-full flex items-center justify-center py-4 px-8 border border-transparent rounded-xl shadow-lg text-lg font-bold text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200 transform hover:scale-105"
-                        >
-                            <i class="fas fa-share-square mr-2"></i> Tải lên
-                        </button>
-                    </form>
-                </section>
-
-                <section class="bg-gray-700 p-6 rounded-2xl shadow-lg border border-gray-600">
-                    <h2 class="text-2xl font-bold text-white mb-6 border-b border-gray-600 pb-4">Lịch sử Cập nhật</h2>
-                    <ul id="version-list" class="space-y-6">
-                        <!-- Default versions will be populated here by JavaScript -->
-                    </ul>
-                </section>
-            </main>
-        </div>
-
-        <div id="instruction-modal" class="modal fixed inset-0 flex items-center justify-center p-4 z-50 opacity-0 invisible">
-            <div class="modal-content bg-gray-800 p-8 rounded-2xl shadow-2xl max-w-lg w-full transform scale-95">
-                <h3 class="text-3xl font-bold text-white mb-4 border-b border-gray-600 pb-2">Thông báo</h3>
-                <div id="modal-content" class="space-y-4 text-gray-300">
-                </div>
-                <div class="mt-6 text-right">
-                    <button
-                        id="close-modal-btn"
-                        class="py-2 px-6 rounded-xl border border-transparent text-lg font-medium text-white bg-gray-600 hover:bg-gray-700 focus:outline-none transition-colors duration-200"
-                    >
-                        Đóng
+                    </div>
+                    <div id="file-info" class="text-center text-gray-400 mt-2">Chưa có file nào được chọn.</div>
+                    <button id="upload-btn" type="submit" class="w-full py-3 px-4 rounded-xl text-white font-semibold bg-blue-600 hover:bg-blue-700 transition-colors duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                        <i class="fas fa-upload mr-2"></i> Tải Lên
                     </button>
+                </form>
+
+                <div class="mt-8">
+                    <h3 class="text-xl font-bold text-white mb-4">Nhật Ký Hoạt Động</h3>
+                    <div id="activity-log" class="bg-gray-700 p-4 rounded-xl max-h-48 overflow-y-auto">
+                        <!-- Log messages will be dynamically added here -->
+                    </div>
                 </div>
+            </section>
+
+            <!-- Version List -->
+            <section class="lg:col-span-2">
+                <h2 class="text-2xl font-bold text-white mb-6">Lịch Sử Phiên Bản</h2>
+                <ul id="version-list" class="space-y-4">
+                    <!-- Version items will be dynamically added here -->
+                </ul>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal -->
+    <div id="instruction-modal" class="modal fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 invisible opacity-0 p-4">
+        <div class="bg-gray-800 rounded-3xl p-8 max-w-md w-full shadow-2xl transform scale-100 transition-transform duration-300 border border-gray-700" id="modal-content-wrapper">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-white"></h3>
+                <button id="close-modal-btn" class="text-gray-400 hover:text-gray-200 transition-colors duration-200 text-3xl">&times;</button>
+            </div>
+            <div id="modal-content" class="text-gray-300">
+                <!-- Modal content will be dynamically inserted here -->
             </div>
         </div>
     </div>
+
+    <!-- Script file -->
     <script src="./assets/script.js"></script>
 </body>
 </html>

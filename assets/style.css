@@ -1,45 +1,36 @@
-/* Custom CSS for a dark, professional theme */
+/* Custom CSS for a better aesthetic that complements Tailwind */
 body {
+    background-color: #1a202c; /* Ensure a consistent background color */
+    color: #cbd5e0; /* Default text color for dark theme */
     font-family: 'Inter', sans-serif;
 }
 
-.modal {
-    background-color: rgba(0, 0, 0, 0.75);
-    transition: opacity 0.3s ease, visibility 0.3s ease;
-}
-.modal-content {
-    transition: transform 0.3s ease;
-}
-.modal.visible {
-    opacity: 1;
-    visibility: visible;
-}
-.modal.visible .modal-content {
-    transform: scale(1);
-}
-
-/* Scrollbar styling for a cleaner look */
+/* Enhancing scrollbar for a cleaner look */
 ::-webkit-scrollbar {
     width: 8px;
 }
+
 ::-webkit-scrollbar-track {
-    background: #374151; /* gray-700 */
+    background: #2d3748; /* bg-gray-700 equivalent */
     border-radius: 10px;
 }
+
 ::-webkit-scrollbar-thumb {
-    background: #4b5563; /* gray-600 */
+    background-color: #4a5568; /* bg-gray-600 equivalent */
     border-radius: 10px;
+    border: 2px solid #2d3748;
 }
+
 ::-webkit-scrollbar-thumb:hover {
-    background: #6b7280; /* gray-500 */
+    background-color: #718096; /* bg-gray-500 equivalent */
 }
 
-/* Basic transition for hover effects */
-button, .cursor-pointer {
-    transition: all 0.3s ease-in-out;
+/* Modal transition */
+.modal {
+    transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
-/* Custom file input styling */
-input[type="file"]::-webkit-file-upload-button {
-    visibility: hidden;
+.modal.visible {
+    opacity: 1;
+    visibility: visible;
 }
