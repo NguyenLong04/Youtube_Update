@@ -8,7 +8,6 @@ let currentVersion = "0.0.0"; // Default version
 const DOMElements = {
     versionList: document.getElementById('version-list'),
     uploadForm: document.getElementById('upload-form'),
-    versionInput: document.getElementById('versionInput'),
     fileInput: document.getElementById('fileInput'),
     uploadBtn: document.getElementById('upload-btn'),
     fileInfo: document.getElementById('file-info'),
@@ -194,6 +193,36 @@ function deleteVersion(index) {
     document.getElementById('cancelDeleteBtn').addEventListener('click', hideModal);
 }
 
+/**
+ * Finds the latest version number in the versions array.
+ * @returns {string} The latest version string (e.g., "v1.0.0") or "v0.0.0" if no versions exist.
+ */
+function findLatestVersion() {
+    if (versions.length === 0) {
+        return "v0.0.0";
+    }
+
+    // Sort descending to find the latest version
+    const sortedVersions = [...versions].sort((a, b) => {
+        const aNum = parseFloat(a.version.substring(1));
+        const bNum = parseFloat(b.version.substring(1));
+        return bNum - aNum;
+    });
+
+    return sortedVersions[0].version;
+}
+
+/**
+ * Increments the last part of a version string.
+ * @param {string} versionString - The version to increment (e.g., "v1.0.0").
+ * @returns {string} The next version string (e.g., "v1.0.1").
+ */
+function getNextVersion(versionString) {
+    const parts = versionString.substring(1).split('.').map(Number);
+    parts[parts.length - 1]++;
+    return `v${parts.join('.')}`;
+}
+
 
 /**
  * Adds a new message to the activity log.
@@ -267,12 +296,11 @@ function displayFileInfo() {
 // Event Listeners
 DOMElements.uploadForm.addEventListener('submit', function(event) {
     event.preventDefault();
-    const version = DOMElements.versionInput.value.trim();
     const file = DOMElements.fileInput.files[0];
 
-    if (!version || !file) {
-        addLogMessage('Lỗi: Vui lòng nhập số phiên bản và chọn một file .zip.', 'error');
-        showModal('Lỗi', '<p>Vui lòng nhập số phiên bản và chọn một file .zip để tải lên.</p>');
+    if (!file) {
+        addLogMessage('Lỗi: Vui lòng chọn một file .zip để tải lên.', 'error');
+        showModal('Lỗi', '<p>Vui lòng chọn một file .zip để tải lên.</p>');
         return;
     }
     
@@ -282,28 +310,26 @@ DOMElements.uploadForm.addEventListener('submit', function(event) {
         return;
     }
 
+    const latestVersion = findLatestVersion();
+    const newVersionNumber = getNextVersion(latestVersion);
+
     // Simulate the upload process by adding to our in-memory array
     const newVersion = {
-        version: version,
+        version: newVersionNumber,
         date: new Date().toISOString().split('T')[0],
-        download_url: `download/${version}/${file.name}`
+        download_url: `download/${newVersionNumber}/${file.name}`
     };
 
     versions.push(newVersion);
-    addLogMessage(`Đã thêm phiên bản mới "${version}" với đường dẫn ${newVersion.download_url}.`);
+    addLogMessage(`Đã thêm phiên bản mới "${newVersionNumber}" với đường dẫn ${newVersion.download_url}.`);
     
-    // Update current version if the new version is greater
-    if (parseFloat(version.substring(1)) > parseFloat(currentVersion.substring(1))) {
-        currentVersion = version;
-        addLogMessage(`Đã cập nhật phiên bản hiện tại thành "${currentVersion}".`);
-    }
+    currentVersion = newVersionNumber;
 
     renderVersions();
     DOMElements.currentVersionDisplay.textContent = currentVersion;
     saveData(); // Save the updated data to Local Storage
 
     // Clear the form for the next upload
-    DOMElements.versionInput.value = '';
     DOMElements.fileInput.value = '';
     displayFileInfo();
 });
