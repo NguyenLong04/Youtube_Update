@@ -1,6 +1,8 @@
 // Data versions as a JavaScript object (simulating a database)
 // We will store new versions here and persist them to Local Storage
 let versions = [];
+let activityLog = [];
+let currentVersion = "0.0.0"; // Default version
 
 // Global state and DOM elements
 const DOMElements = {
@@ -10,7 +12,7 @@ const DOMElements = {
     fileInput: document.getElementById('fileInput'),
     uploadBtn: document.getElementById('upload-btn'),
     fileInfo: document.getElementById('file-info'),
-    activityLog: document.getElementById('activity-log'),
+    activityLogDisplay: document.getElementById('activity-log'),
     instructionModal: document.getElementById('instruction-modal'),
     modalContent: document.getElementById('modal-content'),
     closeModalBtn: document.getElementById('close-modal-btn'),
@@ -78,41 +80,57 @@ function renderVersions() {
 }
 
 /**
- * Saves the versions array to Local Storage.
+ * Saves the versions and activity log arrays to Local Storage.
  */
-function saveVersions() {
+function saveData() {
     try {
         localStorage.setItem('youtube_versions', JSON.stringify(versions));
-        addLogMessage('Đã lưu dữ liệu vào bộ nhớ cục bộ.');
+        localStorage.setItem('youtube_activity_log', JSON.stringify(activityLog));
+        localStorage.setItem('youtube_current_version', currentVersion);
+        addLogMessage('Đã lưu dữ liệu vào bộ nhớ cục bộ.', 'info', false);
     } catch (e) {
         addLogMessage('Lỗi khi lưu dữ liệu vào bộ nhớ cục bộ.', 'error');
     }
 }
 
 /**
- * Loads the versions array from Local Storage.
+ * Loads the versions and activity log arrays from Local Storage.
  */
-function loadVersions() {
+function loadData() {
     try {
         const storedVersions = localStorage.getItem('youtube_versions');
         if (storedVersions) {
             versions = JSON.parse(storedVersions);
-            addLogMessage('Đã tải dữ liệu từ bộ nhớ cục bộ.');
+            addLogMessage('Đã tải dữ liệu phiên bản từ bộ nhớ cục bộ.', 'info', false);
         } else {
-            // Initialize with default data if no data is found
             versions = [
                 { version: 'v1.0.0', date: '2023-10-26', download_url: '#' },
                 { version: 'v0.0.1', date: '2023-09-15', download_url: '#' }
             ];
-            saveVersions();
-            addLogMessage('Khởi tạo dữ liệu mặc định.');
+            addLogMessage('Không tìm thấy dữ liệu phiên bản, khởi tạo dữ liệu mặc định.', 'info', false);
         }
+        
+        const storedLog = localStorage.getItem('youtube_activity_log');
+        if (storedLog) {
+            activityLog = JSON.parse(storedLog);
+            addLogMessage('Đã tải nhật ký hoạt động từ bộ nhớ cục bộ.', 'info', false);
+        } else {
+            activityLog = [];
+            addLogMessage('Không tìm thấy nhật ký hoạt động, khởi tạo rỗng.', 'info', false);
+        }
+
+        const storedCurrentVersion = localStorage.getItem('youtube_current_version');
+        if (storedCurrentVersion) {
+            currentVersion = storedCurrentVersion;
+        }
+
     } catch (e) {
-        addLogMessage('Lỗi khi tải dữ liệu từ bộ nhớ cục bộ, sử dụng dữ liệu mặc định.', 'error');
+        addLogMessage('Lỗi khi tải dữ liệu từ bộ nhớ cục bộ, sử dụng dữ liệu mặc định.', 'error', false);
         versions = [
             { version: 'v1.0.0', date: '2023-10-26', download_url: '#' },
             { version: 'v0.0.1', date: '2023-09-15', download_url: '#' }
         ];
+        activityLog = [];
     }
 }
 
@@ -140,7 +158,7 @@ function editVersion(index) {
             versions[index].version = newVersionInput;
             addLogMessage(`Đã cập nhật phiên bản từ "${oldVersion.version}" thành "${newVersionInput}".`);
             renderVersions();
-            saveVersions();
+            saveData();
             hideModal();
         } else {
             addLogMessage('Lỗi: Phiên bản không được để trống.', 'error');
@@ -169,7 +187,7 @@ function deleteVersion(index) {
         versions.splice(index, 1);
         addLogMessage(`Đã xóa phiên bản "${versionToDelete.version}".`);
         renderVersions();
-        saveVersions();
+        saveData();
         hideModal();
     });
 
@@ -181,13 +199,29 @@ function deleteVersion(index) {
  * Adds a new message to the activity log.
  * @param {string} message - The message to log.
  * @param {string} type - The type of message ('info' or 'error').
+ * @param {boolean} persist - Whether to save the log to local storage immediately.
  */
-function addLogMessage(message, type = 'info') {
-    const logItem = document.createElement('div');
+function addLogMessage(message, type = 'info', persist = true) {
     const timestamp = new Date().toLocaleTimeString();
-    logItem.className = `text-sm ${type === 'error' ? 'text-red-400' : 'text-gray-400'}`;
-    logItem.textContent = `[${timestamp}] ${message}`;
-    DOMElements.activityLog.prepend(logItem); // Add to the top
+    const logItem = { message: message, timestamp: timestamp, type: type };
+    activityLog.push(logItem);
+    renderLog();
+    if (persist) {
+        saveData();
+    }
+}
+
+/**
+ * Renders the activity log on the page.
+ */
+function renderLog() {
+    DOMElements.activityLogDisplay.innerHTML = '';
+    activityLog.forEach(logItem => {
+        const logDiv = document.createElement('div');
+        logDiv.className = `text-sm ${logItem.type === 'error' ? 'text-red-400' : 'text-gray-400'}`;
+        logDiv.textContent = `[${logItem.timestamp}] ${logItem.message}`;
+        DOMElements.activityLogDisplay.prepend(logDiv);
+    });
 }
 
 /**
@@ -257,8 +291,16 @@ DOMElements.uploadForm.addEventListener('submit', function(event) {
 
     versions.push(newVersion);
     addLogMessage(`Đã thêm phiên bản mới "${version}" với đường dẫn ${newVersion.download_url}.`);
+    
+    // Update current version if the new version is greater
+    if (parseFloat(version.substring(1)) > parseFloat(currentVersion.substring(1))) {
+        currentVersion = version;
+        addLogMessage(`Đã cập nhật phiên bản hiện tại thành "${currentVersion}".`);
+    }
+
     renderVersions();
-    saveVersions(); // Save the updated array to Local Storage
+    DOMElements.currentVersionDisplay.textContent = currentVersion;
+    saveData(); // Save the updated data to Local Storage
 
     // Clear the form for the next upload
     DOMElements.versionInput.value = '';
@@ -271,8 +313,10 @@ DOMElements.fileInput.addEventListener('change', displayFileInfo);
 
 // Initial render on page load
 document.addEventListener('DOMContentLoaded', () => {
-    loadVersions(); // Load data from Local Storage first
+    loadData(); // Load data from Local Storage first
     renderVersions();
+    renderLog();
     displayFileInfo(); // Initialize upload button state
+    DOMElements.currentVersionDisplay.textContent = currentVersion;
     addLogMessage('Trang web đã tải xong.');
 });
