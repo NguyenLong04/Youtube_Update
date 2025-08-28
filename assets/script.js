@@ -1,3 +1,6 @@
+// NOTE: To use this feature, you need to add a new div in your index.html:
+// <div id="file-info" class="mt-4 text-center text-sm"></div>
+
 // A simple function to simulate an API call with a delay
 function mockApiCall(data) {
     return new Promise(resolve => {
@@ -29,7 +32,8 @@ const DOMElements = {
     closeModalBtn: document.getElementById('close-modal-btn'),
     currentVersionDisplay: document.getElementById('current-version'),
     checkUpdateButton: document.getElementById('check-update-btn'),
-    activityLog: document.getElementById('activity-log')
+    activityLog: document.getElementById('activity-log'),
+    fileInfo: document.getElementById('file-info') // New element for file info
 };
 
 // Function to render the version list on the page
@@ -80,6 +84,20 @@ async function fetchAndRenderVersions() {
 function showModal(title, content) {
     DOMElements.modalContent.innerHTML = content;
     DOMElements.instructionModal.classList.remove('hidden');
+}
+
+// Function to display selected file info
+function displayFileInfo() {
+    const file = DOMElements.fileInput.files[0];
+    if (file) {
+        DOMElements.fileInfo.innerHTML = `
+            <p class="font-semibold text-gray-800">File đã chọn:</p>
+            <p class="text-gray-600">Tên: ${file.name}</p>
+            <p class="text-gray-600">Dung lượng: ${(file.size / 1024 / 1024).toFixed(2)} MB</p>
+        `;
+    } else {
+        DOMElements.fileInfo.innerHTML = '';
+    }
 }
 
 // Event Listeners
@@ -140,6 +158,9 @@ checkUpdateButton.addEventListener('click', async function() {
         showModal('Phiên bản mới nhất', 'Bạn đang sử dụng phiên bản mới nhất.');
     }
 });
+
+// New event listener for file selection
+fileInput.addEventListener('change', displayFileInfo);
 
 // Initial render on page load
 document.addEventListener('DOMContentLoaded', () => {
